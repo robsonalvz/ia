@@ -26,13 +26,14 @@ def search(initial_state, goal):
     explored = set()
 
     while True:
-        #print(frontier)
+        print('Fronteira:', frontier)
 
         if len(frontier) == 0:
             return False
 
 
         chosen = choose_state(frontier)
+        print(chosen['state'],'\n')
         explored.add(chosen['state'])
 
         if chosen['state'] == goal:
