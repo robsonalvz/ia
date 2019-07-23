@@ -4,8 +4,12 @@ class State(object):
         self.neighbors = []
 
     def add_neighbors(self, states):
-        self.neighbors.extend(states)
-        
+        for state in states:
+            self.neighbors.append({
+                'state': state[0],
+                'cost': state[1] + state[2]
+            })
+
     def __str__(self):
         return self.name
 
@@ -14,28 +18,60 @@ class State(object):
 
 
 def search(initial_state, goal):
-    frontier = [initial_state]
+    frontier = [{
+        'state': initial_state,
+        'cost': 0,
+        'parent': None
+    }]
     explored = set()
 
     while True:
-        print(frontier)
+        #print(frontier)
 
         if len(frontier) == 0:
             return False
 
-        current_state = choose_state(frontier)
-        explored.add(current_state)
 
-        if current_state == goal:
-            return current_state
+        chosen = choose_state(frontier)
+        explored.add(chosen['state'])
 
-        for state in current_state.neighbors:
-            if state not in explored and state not in frontier:
-                frontier.append(state)   
+        if chosen['state'] == goal:
+            return chosen
+
+        for neighbor in chosen['state'].neighbors:
+            if neighbor['state'] in explored:
+                continue
+            else:
+                flag = False
+                for node in frontier:
+
+                    if neighbor['state'] == node['state']:
+                        flag = True
+                        if node['cost'] > neighbor['cost'] + chosen['cost']:
+                            frontier.remove(node)
+                            frontier.append({
+                                'state': neighbor['state'],
+                                'cost': neighbor['cost'] + chosen['cost'],
+                                'parent': chosen
+                            })
+
+                if flag == False:
+                    frontier.append({
+                        'state': neighbor['state'],
+                        'cost': neighbor['cost'] + chosen['cost'],
+                        'parent': chosen
+                    })
 
 
 def choose_state(frontier):
+    lower_cost_node = frontier[0]
 
+    for node in frontier:
+        if node['cost'] < lower_cost_node['cost']:
+            lower_cost_node = node
+    frontier.remove(lower_cost_node)
+
+    return lower_cost_node
 
 
 joao_pessoa = State("João Pessoa")
@@ -57,41 +93,41 @@ sousa = State("Sousa")
 cajazeiras = State("Cajazeiras")
 
 joao_pessoa.add_neighbors([
-    [campina_grande,125,300], 
-    [itabaiana,68,360], 
-    [santa_rita,26,451]
+    [campina_grande, 125, 300],
+    [itabaiana, 68, 360],
+    [santa_rita, 26, 451]
 ])
 
 campina_grande.add_neighbors([
-    [joao_pessoa, 125, 300], 
-    [itabaiana, 65, 360], 
-    [areia, 40, 316], 
-    [coxixola, 128, 232], 
+    [joao_pessoa, 125, 300],
+    [itabaiana, 65, 360],
+    [areia, 40, 316],
+    [coxixola, 128, 232],
     [soledade, 58, 243]
 ])
 
 itabaiana.add_neighbors([
-    [joao_pessoa, 68, 460], 
+    [joao_pessoa, 68, 460],
     [campina_grande, 65, 300]
 ])
 
 santa_rita.add_neighbors([
-    [joao_pessoa, 26, 451], 
+    [joao_pessoa, 26, 451],
     [mamanguape, 38, 380]
 ])
 
 mamanguape.add_neighbors([
-    [santa_rita, 38, 451], 
+    [santa_rita, 38, 451],
     [guarabira, 42, 340]
 ])
 
 guarabira.add_neighbors([
-    [mamanguape, 42, 380], 
+    [mamanguape, 42, 380],
     [areia, 41, 316]
 ])
 
 areia.add_neighbors([
-    [guarabira, 41, 340], 
+    [guarabira, 41, 340],
     [campina_grande, 40, 316]
 ])
 
@@ -100,22 +136,22 @@ picui.add_neighbors([
 ])
 
 soledade.add_neighbors([
-    [campina_grande, 58, 300], 
-    [patos, 177, 122], 
+    [campina_grande, 58, 300],
+    [patos, 177, 122],
     [picui, 69, 250]
 ])
 coxixola.add_neighbors([
-    [campina_grande, 128, 232], 
+    [campina_grande, 128, 232],
     [monteiro, 83, 195]
 ])
 patos.add_neighbors([
-    [soledade, 177, 243], 
-    [pombal, 71, 55], 
+    [soledade, 177, 243],
+    [pombal, 71, 55],
     [itaporanga, 108, 65]
 ])
 
 monteiro.add_neighbors([
-    [coxixola, 83, 232], 
+    [coxixola, 83, 232],
     [itaporanga, 224, 65]
 ])
 
@@ -123,12 +159,12 @@ catole.add_neighbors([
     [pombal, 57, 55]
 ])
 pombal.add_neighbors([
-    [catole, 57, 110], 
-    [patos, 71, 122], 
+    [catole, 57, 110],
+    [patos, 71, 122],
     [sousa, 56, 20]
 ])
 itaporanga.add_neighbors([
-    [patos, 108, 122], 
+    [patos, 108, 122],
     [monteiro, 224, 195]
 ])
 sousa.add_neighbors([
@@ -137,9 +173,18 @@ sousa.add_neighbors([
 
 ])
 cajazeiras.add_neighbors([
-    [sousa, 43, 20], 
+    [sousa, 43, 20],
     [itaporanga, 121, 65]
 ])
 
-result = search(joao_pessoa, cajazeiras)
-print(result)
+path = []
+
+state = search(joao_pessoa,cajazeiras)
+
+while state != None:
+    path.append(state['state'])
+    state = state['parent']
+
+path.reverse()
+
+print(path)
